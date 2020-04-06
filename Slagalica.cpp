@@ -19,7 +19,7 @@ using namespace std;
 HANDLE ConsoleOutputHandle = GetStdHandle(STD_OUTPUT_HANDLE);
 HANDLE ConsoleInputHandle = GetStdHandle(STD_INPUT_HANDLE);
 mutex mtx;
-bool kraj = false, isteklovreme = false, mute = false, interupt = false;
+bool kraj = false, isteklovreme = false, mute = false, interupt = false, canic = false;
 char *recnik;
 DWORD recnikSize;
 wstring slova(12, NULL);
@@ -175,7 +175,9 @@ int main() {
 			isteklovreme = true;
 		}
 		kraj = true;
-		Sleep(50);
+		do
+			Sleep(50);
+		while (GetKeyState(VK_RETURN) < 0);
 
 		if (!isteklovreme) {
 			wstring recr(13, NULL);
@@ -186,6 +188,12 @@ int main() {
 				std::wcout << L"                 Унели сте празно решење...                ";
 				SakriKursor();
 				mtx.unlock();
+			}
+			else if (rec == L"ДОБРОВЕЧЕ") {
+				Slika(3);
+				PodesiKonzolu();
+				OdstampajKonzolu();
+				continue;
 			}
 			else if (ProveriRec(rec)) {
 				size_t i = 2;
@@ -574,7 +582,10 @@ void Slika(int br) {
 	_CONSOLE_SCREEN_BUFFER_INFOEX info;
 	info.cbSize = sizeof(info);
 	GetConsoleScreenBufferInfoEx(ConsoleOutputHandle, &info);
-	info.dwSize = { 501, 143 };
+	if (br == 3)
+		info.dwSize = { 500, 248 };
+	else
+		info.dwSize = { 500, 142 };
 	info.ColorTable[1] = RGB(4, 18, 93);
 	info.ColorTable[5] = RGB(255, 209, 41);
 	info.ColorTable[6] = RGB(238, 238, 79);
@@ -584,16 +595,26 @@ void Slika(int br) {
 
 	CONSOLE_FONT_INFOEX infof = { 0 };
 	infof.cbSize = sizeof(infof);
-	infof.dwFontSize.Y = 5;
+	if (br == 3)
+		infof.dwFontSize.Y = 2;
+	else
+		infof.dwFontSize.Y = 5;
 	infof.FontWeight = FW_NORMAL;
 	wcscpy_s(infof.FaceName, 32, L"Consolas");
 	SetCurrentConsoleFontEx(ConsoleOutputHandle, NULL, &infof);
 
 	DWORD tmp;
-	FillConsoleOutputAttribute(ConsoleOutputHandle, BACKGROUND_BLUE, 501 * 143, { 0, 0 }, &tmp);
-	system("MODE CON COLS=501 LINES=143");
+	if (br == 3) {
+		FillConsoleOutputAttribute(ConsoleOutputHandle, BACKGROUND_BLUE, 500 * 248, { 0, 0 }, &tmp);
+		system("MODE 500, 248");
+		canic = true;
+	}
+	else {
+		FillConsoleOutputAttribute(ConsoleOutputHandle, BACKGROUND_BLUE, 500 * 142, { 0, 0 }, &tmp);
+		system("MODE 500, 142");
+	}
 
-	if (br == 1) {
+	if (br != 2) {
 		CentrirajKonzolu();
 		CentrirajKonzolu();
 	}
@@ -604,6 +625,8 @@ void Slika(int br) {
 		hRes = FindResourceW(NULL, MAKEINTRESOURCEW(IDR_IMG1), MAKEINTRESOURCEW(IMG));
 	else if (br == 2)
 		hRes = FindResourceW(NULL, MAKEINTRESOURCEW(IDR_IMG2), MAKEINTRESOURCEW(IMG));
+	else if (br == 3)
+		hRes = FindResourceW(NULL, MAKEINTRESOURCEW(IDR_IMG3), MAKEINTRESOURCEW(IMG));
 	if (hRes != NULL) {
 		HGLOBAL hData = LoadResource(0, hRes);
 		if (hData != NULL) {
@@ -611,18 +634,22 @@ void Slika(int br) {
 			char *data = (char *)LockResource(hData);
 			slika.assign(data, dataSize);
 
-			SetConsoleTextAttribute(ConsoleOutputHandle, 21);
+			if (br == 3)
+				SetConsoleTextAttribute(ConsoleOutputHandle, 15);
+			else
+				SetConsoleTextAttribute(ConsoleOutputHandle, 21);
 			gotoxy(0, 0);
 			cout << slika;
 			SakriKursor();
 
-			if (br == 1) {
+			if (br != 2) {
 				clock_t start = clock();
 				while (GetKeyState(VK_SPACE) >= 0 && GetKeyState(VK_RETURN) >= 0 && (clock() - start) / CLOCKS_PER_SEC < 8)Sleep(50);
 				while (GetKeyState(VK_SPACE) < 0 || GetKeyState(VK_RETURN) < 0)Sleep(50);
+				canic = false;
 			}
-			else if (br == 2)
-				Sleep(1111);
+			else
+				Sleep(999);
 		}
 	}
 }
@@ -785,7 +812,7 @@ void Muzika() {
 }
 
 BOOL WINAPI EXIT(DWORD CEvent) {
-	if (CEvent == CTRL_CLOSE_EVENT && IsWindows10OrGreater())
+	if (CEvent == CTRL_CLOSE_EVENT && IsWindows10OrGreater() && !canic)
 		Slika(2);
 
 	return TRUE;

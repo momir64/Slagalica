@@ -5,9 +5,10 @@
 #define IDI_ICON1                       101
 #define IMG                             102
 #define RECNIK                          103
-#define IDR_IMG1                        104
-#define IDR_IMG2                        105
-#define IDR_RECNIK1                     106
+#define IDR_RECNIK1                     104
+#define IDR_IMG1                        105
+#define IDR_IMG2                        106
+#define IDR_IMG3                        107
 
 // Next default values for new objects
 // 

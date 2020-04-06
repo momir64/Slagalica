@@ -37,6 +37,7 @@
   <ItemGroup>
     <None Include="slika2" />
     <None Include="slika1" />
+    <None Include="slika3" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="rečnik.txt" />

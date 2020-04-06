@@ -36,6 +36,7 @@ IDI_ICON1               ICON                    "skoèko.ico"
 
 IDR_IMG1                IMG                     "slika1"
 IDR_IMG2                IMG                     "slika2"
+IDR_IMG3                IMG                     "slika3"
 
 
 /////////////////////////////////////////////////////////////////////////////
